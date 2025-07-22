@@ -1,4 +1,14 @@
 terraform {
+  backend "s3" {
+    bucket         = "erewash-rag-terraform-state"
+    key            = "terraform.tfstate"
+    region         = "eu-west-2"
+    dynamodb_table = "erewash-rag-terraform-lock" # optional, for state locking
+    encrypt        = true
+  }
+}
+
+terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -91,7 +101,7 @@ resource "aws_lambda_function" "api" {
   function_name = "erewash-rag-api${var.stack_id != "" ? "-" : ""}${var.stack_id}"
   role          = aws_iam_role.lambda_exec.arn
   package_type  = "Image"
-  image_uri     = "ghcr.io/erewah-rag/erewash-rag-api:latest"
+  image_uri     = "318874356511.dkr.ecr.eu-west-2.amazonaws.com/erewash-rag-api:latest"
   vpc_config {
     subnet_ids         = [aws_subnet.main.id]
     security_group_ids = [aws_security_group.lambda_sg.id]
