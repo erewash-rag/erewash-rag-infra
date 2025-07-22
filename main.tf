@@ -54,6 +54,37 @@ data "aws_iam_policy_document" "s3_public_read" {
   }
 }
 
+# S3 Bucket for article images
+resource "aws_s3_bucket" "article_images" {
+  bucket = "erewash-rag-article-images${var.stack_id != "" ? "-" : ""}${var.stack_id}"
+  force_destroy = true
+}
+
+resource "aws_s3_bucket_public_access_block" "article_images" {
+  bucket = aws_s3_bucket.article_images.id
+  block_public_acls   = false
+  block_public_policy = false
+  ignore_public_acls  = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_policy" "article_images_policy" {
+  bucket = aws_s3_bucket.article_images.id
+  policy = data.aws_iam_policy_document.article_images_public_read.json
+}
+
+data "aws_iam_policy_document" "article_images_public_read" {
+  statement {
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.article_images.arn}/*"]
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+    effect = "Allow"
+  }
+}
+
 # IAM Role for Lambda
 resource "aws_iam_role" "lambda_exec" {
   name = "erewash-rag-lambda-exec${var.stack_id != "" ? "-" : ""}${var.stack_id}"
