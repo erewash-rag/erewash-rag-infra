@@ -1,0 +1,185 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 4.0"
+    }
+  }
+  required_version = ">= 1.0.0"
+}
+
+provider "aws" {
+  region = "eu-west-2"
+}
+
+# S3 Bucket for static site hosting
+resource "aws_s3_bucket" "static_site" {
+  bucket = "erewash-rag.co.uk"
+  force_destroy = true
+
+  website {
+    index_document = "index.html"
+    error_document = "error.html"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "static_site" {
+  bucket = aws_s3_bucket.static_site.id
+  block_public_acls   = false
+  block_public_policy = false
+  ignore_public_acls  = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_policy" "static_site_policy" {
+  bucket = aws_s3_bucket.static_site.id
+  policy = data.aws_iam_policy_document.s3_public_read.json
+}
+
+data "aws_iam_policy_document" "s3_public_read" {
+  statement {
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.static_site.arn}/*"]
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+    effect = "Allow"
+  }
+}
+
+# VPC
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+}
+
+resource "aws_subnet" "main" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = "eu-west-2a"
+}
+
+# IAM Role for Lambda
+resource "aws_iam_role" "lambda_exec" {
+  name = "erewash-rag-lambda-exec"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+}
+
+data "aws_iam_policy_document" "lambda_assume_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_basic" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+# Lambda Function
+resource "aws_lambda_function" "api" {
+  function_name = "erewash-rag-api"
+  role          = aws_iam_role.lambda_exec.arn
+  handler       = "lambda_function.lambda_handler"
+  runtime       = "python3.11"
+  s3_bucket     = "erewash-rag-server-code"
+  s3_key        = "erewash-rag-api.zip"
+  vpc_config {
+    subnet_ids         = [aws_subnet.main.id]
+    security_group_ids = [aws_security_group.lambda_sg.id]
+  }
+  environment {
+    variables = {}
+  }
+}
+
+resource "aws_security_group" "lambda_sg" {
+  name        = "erewash-rag-lambda-sg"
+  description = "Allow Lambda access in VPC"
+  vpc_id      = aws_vpc.main.id
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# API Gateway REST API
+resource "aws_api_gateway_rest_api" "api" {
+  name        = "erewash-rag-api"
+  description = "API for erewash-rag"
+}
+
+resource "aws_api_gateway_resource" "articles" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_rest_api.api.root_resource_id
+  path_part   = "articles"
+}
+
+resource "aws_api_gateway_resource" "article_id" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_resource.articles.id
+  path_part   = "{articleId}"
+}
+
+resource "aws_api_gateway_method" "get_articles" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.articles.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_method" "get_article_id" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.article_id.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "get_articles" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.articles.id
+  http_method = aws_api_gateway_method.get_articles.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.api.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "get_article_id" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.article_id.id
+  http_method = aws_api_gateway_method.get_article_id.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.api.invoke_arn
+}
+
+resource "aws_lambda_permission" "apigw_articles" {
+  statement_id  = "AllowAPIGatewayInvokeArticles"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.api.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/GET/articles"
+}
+
+resource "aws_lambda_permission" "apigw_article_id" {
+  statement_id  = "AllowAPIGatewayInvokeArticleId"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.api.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/GET/articles/*"
+}
+
+resource "aws_api_gateway_deployment" "api" {
+  depends_on = [
+    aws_api_gateway_integration.get_articles,
+    aws_api_gateway_integration.get_article_id
+  ]
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  stage_name  = "prod"
+} 
