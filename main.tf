@@ -90,10 +90,8 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
 resource "aws_lambda_function" "api" {
   function_name = "erewash-rag-api${var.stack_id != "" ? "-" : ""}${var.stack_id}"
   role          = aws_iam_role.lambda_exec.arn
-  handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.11"
-  s3_bucket     = "erewash-rag-server-code"
-  s3_key        = "erewash-rag-api.zip"
+  package_type  = "Image"
+  image_uri     = "ghcr.io/erewah-rag/erewash-rag-api:latest"
   vpc_config {
     subnet_ids         = [aws_subnet.main.id]
     security_group_ids = [aws_security_group.lambda_sg.id]
