@@ -158,6 +158,17 @@ resource "aws_api_gateway_deployment" "api" {
     aws_api_gateway_integration.get_article_id
   ]
   rest_api_id = aws_api_gateway_rest_api.api.id
+
+  triggers = {
+    redeployment = sha1(join(",", [
+      aws_api_gateway_integration.get_articles.id,
+      aws_api_gateway_integration.get_article_id.id,
+      aws_api_gateway_method.get_articles.id,
+      aws_api_gateway_method.get_article_id.id,
+      aws_api_gateway_resource.articles.id,
+      aws_api_gateway_resource.article_id.id
+    ]))
+  }
 }
 
 resource "aws_api_gateway_stage" "prod" {
