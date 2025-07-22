@@ -1,10 +1,9 @@
 terraform {
   backend "s3" {
-    bucket         = "erewash-rag-terraform-state"
-    key            = "terraform.tfstate"
-    region         = "eu-west-2"
-    dynamodb_table = "erewash-rag-terraform-lock" # optional, for state locking
-    encrypt        = true
+    bucket = "erewash-rag-terraform-state"
+    key    = "terraform.tfstate"
+    region = "eu-west-2"
+    encrypt = true
   }
 }
 
