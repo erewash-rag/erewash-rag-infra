@@ -95,6 +95,29 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_iam_role_policy" "lambda_vpc_access" {
+  name = "lambda-vpc-access${var.stack_id != "" ? "-" : ""}${var.stack_id}"
+  role = aws_iam_role.lambda_exec.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:CreateNetworkInterface",
+          "ec2:DescribeNetworkInterfaces",
+          "ec2:DeleteNetworkInterface",
+          "ec2:DescribeVpcs",
+          "ec2:DescribeSubnets",
+          "ec2:DescribeSecurityGroups"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 # Lambda Function
 resource "aws_lambda_function" "api" {
   function_name = "erewash-rag-api${var.stack_id != "" ? "-" : ""}${var.stack_id}"
