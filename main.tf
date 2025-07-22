@@ -85,6 +85,21 @@ data "aws_iam_policy_document" "article_images_public_read" {
   }
 }
 
+# DynamoDB Table for articles
+resource "aws_dynamodb_table" "articles" {
+  name           = "articles"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "id"
+
+  attribute {
+    name = "id"
+    type = "N"
+  }
+  tags = {
+    Name = "erewash-rag-db"
+  }
+}
+
 # IAM Role for Lambda
 resource "aws_iam_role" "lambda_exec" {
   name = "erewash-rag-lambda-exec${var.stack_id != "" ? "-" : ""}${var.stack_id}"
