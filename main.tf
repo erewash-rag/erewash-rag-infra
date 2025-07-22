@@ -93,7 +93,7 @@ resource "aws_dynamodb_table" "articles" {
 
   attribute {
     name = "id"
-    type = "N"
+    type = "S"
   }
   tags = {
     Name = "erewash-rag-db"
