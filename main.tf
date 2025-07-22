@@ -14,7 +14,7 @@ provider "aws" {
 
 # S3 Bucket for static site hosting
 resource "aws_s3_bucket" "static_site" {
-  bucket = "erewash-rag.co.uk"
+  bucket = "erewash-rag${var.stack_id != "" ? "-" : ""}${var.stack_id}.co.uk"
   force_destroy = true
 
   website {
@@ -51,17 +51,23 @@ data "aws_iam_policy_document" "s3_public_read" {
 # VPC
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
+  tags = {
+    Name = "erewash-rag-vpc${var.stack_id != "" ? "-" : ""}${var.stack_id}"
+  }
 }
 
 resource "aws_subnet" "main" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "eu-west-2a"
+  tags = {
+    Name = "erewash-rag-subnet${var.stack_id != "" ? "-" : ""}${var.stack_id}"
+  }
 }
 
 # IAM Role for Lambda
 resource "aws_iam_role" "lambda_exec" {
-  name = "erewash-rag-lambda-exec"
+  name = "erewash-rag-lambda-exec${var.stack_id != "" ? "-" : ""}${var.stack_id}"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
@@ -82,7 +88,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
 
 # Lambda Function
 resource "aws_lambda_function" "api" {
-  function_name = "erewash-rag-api"
+  function_name = "erewash-rag-api${var.stack_id != "" ? "-" : ""}${var.stack_id}"
   role          = aws_iam_role.lambda_exec.arn
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.11"
@@ -98,7 +104,7 @@ resource "aws_lambda_function" "api" {
 }
 
 resource "aws_security_group" "lambda_sg" {
-  name        = "erewash-rag-lambda-sg"
+  name = "erewash-rag-lambda-sg${var.stack_id != "" ? "-" : ""}${var.stack_id}"
   description = "Allow Lambda access in VPC"
   vpc_id      = aws_vpc.main.id
   egress {
@@ -111,7 +117,7 @@ resource "aws_security_group" "lambda_sg" {
 
 # API Gateway REST API
 resource "aws_api_gateway_rest_api" "api" {
-  name        = "erewash-rag-api"
+  name        = "erewash-rag-api${var.stack_id != "" ? "-" : ""}${var.stack_id}"
   description = "API for erewash-rag"
 }
 
