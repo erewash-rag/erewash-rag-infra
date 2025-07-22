@@ -33,9 +33,9 @@ jobs:
         run: terraform init
 
       - name: Terraform Plan
-        run: terraform plan -var="stack_id=dev"
+        run: terraform plan
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -var="stack_id=dev"
+        run: terraform apply -auto-approve
         env:
           TF_INPUT: false 
