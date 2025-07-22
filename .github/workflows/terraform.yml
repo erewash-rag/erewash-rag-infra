@@ -17,17 +17,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Zip Lambda function
-        run: |
-          cd lambda
-          zip -r erewash-rag-api.zip lambda_function.py
-          cd ..
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
