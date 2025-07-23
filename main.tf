@@ -121,6 +121,11 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_iam_role_policy_attachment" "lambda_dynamodb_full" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess_v2"
+}
+
 # Lambda Function
 resource "aws_lambda_function" "api" {
   function_name = "erewash-rag-api${var.stack_id != "" ? "-" : ""}${var.stack_id}"
