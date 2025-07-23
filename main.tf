@@ -227,27 +227,37 @@ resource "aws_lambda_permission" "apigw_articles_post" {
   source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/POST/articles"
 }
 
+resource "aws_api_gateway_method" "delete_article_id" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.article_id.id
+  http_method   = "DELETE"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "delete_article_id" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.article_id.id
+  http_method             = aws_api_gateway_method.delete_article_id.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.api.invoke_arn
+}
+
+resource "aws_lambda_permission" "apigw_article_id_delete" {
+  statement_id  = "AllowAPIGatewayInvokeArticleIdDelete"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.api.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.api.execution_arn}/*/DELETE/articles/*"
+}
+
 resource "aws_api_gateway_deployment" "api" {
   depends_on = [
     aws_api_gateway_integration.get_articles,
-    aws_api_gateway_integration.get_article_id
+    aws_api_gateway_integration.post_articles,
+    aws_api_gateway_integration.get_article_id,
+    aws_api_gateway_integration.delete_article_id
   ]
   rest_api_id = aws_api_gateway_rest_api.api.id
-
-  triggers = {
-    redeployment = sha1(join(",", [
-      aws_api_gateway_integration.get_articles.id,
-      aws_api_gateway_integration.get_article_id.id,
-      aws_api_gateway_method.get_articles.id,
-      aws_api_gateway_method.get_article_id.id,
-      aws_api_gateway_resource.articles.id,
-      aws_api_gateway_resource.article_id.id
-    ]))
-  }
-}
-
-resource "aws_api_gateway_stage" "prod" {
-  stage_name    = "prod"
-  rest_api_id   = aws_api_gateway_rest_api.api.id
-  deployment_id = aws_api_gateway_deployment.api.id
+  stage_name  = "prod"
 } 
