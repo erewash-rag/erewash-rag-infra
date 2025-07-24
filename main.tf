@@ -18,6 +18,18 @@ provider "aws" {
   region = "eu-west-2"
 }
 
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+}
+
+resource "aws_acm_certificate" "static_site" {
+  provider          = aws.us_east_1
+  domain_name       = "erewash-rag.co.uk"
+  validation_method = "DNS"
+  subject_alternative_names = ["www.erewash-rag.co.uk"]
+}
+
 # S3 Bucket for static site hosting
 resource "aws_s3_bucket" "static_site" {
   bucket = "erewash-rag${var.stack_id != "" ? "-" : ""}${var.stack_id}.co.uk"
@@ -321,4 +333,49 @@ resource "aws_api_gateway_usage_plan_key" "main" {
   key_id        = aws_api_gateway_api_key.main.id
   key_type      = "API_KEY"
   usage_plan_id = aws_api_gateway_usage_plan.main.id
+} 
+
+resource "aws_cloudfront_distribution" "static_site" {
+  enabled             = true
+  is_ipv6_enabled     = true
+  comment             = "erewash-rag static site distribution"
+  aliases             = ["erewash-rag.co.uk", "www.erewash-rag.co.uk"]
+
+  origin {
+    domain_name = aws_s3_bucket.static_site.website_endpoint
+    origin_id   = "s3-static-site-origin"
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  default_cache_behavior {
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "s3-static-site-origin"
+    viewer_protocol_policy = "redirect-to-https"
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+  }
+
+  price_class = "PriceClass_100"
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    acm_certificate_arn            = aws_acm_certificate.static_site.arn
+    ssl_support_method             = "sni-only"
+    minimum_protocol_version       = "TLSv1.2_2021"
+  }
 } 
