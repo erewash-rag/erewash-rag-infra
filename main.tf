@@ -208,6 +208,7 @@ resource "aws_api_gateway_method" "post_articles" {
   resource_id   = aws_api_gateway_resource.articles.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = true
 }
 
 resource "aws_api_gateway_integration" "post_articles" {
@@ -232,6 +233,7 @@ resource "aws_api_gateway_method" "delete_article_id" {
   resource_id   = aws_api_gateway_resource.article_id.id
   http_method   = "DELETE"
   authorization = "NONE"
+  api_key_required = true
 }
 
 resource "aws_api_gateway_integration" "delete_article_id" {
@@ -256,6 +258,7 @@ resource "aws_api_gateway_method" "put_article_id" {
   resource_id   = aws_api_gateway_resource.article_id.id
   http_method   = "PUT"
   authorization = "NONE"
+  api_key_required = true
 }
 
 resource "aws_api_gateway_integration" "put_article_id" {
@@ -290,4 +293,32 @@ resource "aws_api_gateway_stage" "prod" {
   stage_name    = "prod"
   rest_api_id   = aws_api_gateway_rest_api.api.id
   deployment_id = aws_api_gateway_deployment.api.id
+}
+
+resource "random_string" "api_key_value" {
+   length  = 32
+   special = false
+}
+
+resource "aws_api_gateway_api_key" "main" {
+  name        = "erewash-rag-api-key"
+  description = "API key for protected endpoints (POST, PUT, DELETE)"
+  enabled     = true
+  value       = random_string.api_key_value.result
+} 
+
+resource "aws_api_gateway_usage_plan" "main" {
+  name = "erewash-rag-usage-plan"
+  description = "Usage plan for endpoints requiring API key (POST, PUT, DELETE)"
+
+  api_stages {
+    api_id = aws_api_gateway_rest_api.api.id
+    stage  = aws_api_gateway_stage.prod.stage_name
+  }
+}
+
+resource "aws_api_gateway_usage_plan_key" "main" {
+  key_id        = aws_api_gateway_api_key.main.id
+  key_type      = "API_KEY"
+  usage_plan_id = aws_api_gateway_usage_plan.main.id
 } 

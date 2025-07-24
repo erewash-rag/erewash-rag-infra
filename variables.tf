@@ -8,4 +8,4 @@ variable "stack_id" {
   description = "Optional stack identifier to be included in resource names (e.g. dev, staging, prod). Default is blank."
   type        = string
   default     = ""
-} 
+}
