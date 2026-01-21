@@ -150,7 +150,7 @@ resource "aws_lambda_function" "api" {
 }
 
 # copy-writer Lambda Function
-resource "aws_lambda_function" "api" {
+resource "aws_lambda_function_copy_writer" "api" {
   function_name = "erewash-rag-copy-writer${var.stack_id != "" ? "-" : ""}${var.stack_id}"
   role          = aws_iam_role.lambda_exec.arn
   package_type  = "Image"
