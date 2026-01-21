@@ -149,6 +149,17 @@ resource "aws_lambda_function" "api" {
   }
 }
 
+# copy-writer Lambda Function
+resource "aws_lambda_function" "api" {
+  function_name = "erewash-rag-copy-writer${var.stack_id != "" ? "-" : ""}${var.stack_id}"
+  role          = aws_iam_role.lambda_exec.arn
+  package_type  = "Image"
+  image_uri     = "318874356511.dkr.ecr.eu-west-2.amazonaws.com/erewash-rag-copy-writer:latest"
+  environment {
+    variables = {}
+  }
+}
+
 # API Gateway REST API
 resource "aws_api_gateway_rest_api" "api" {
   name        = "erewash-rag-api${var.stack_id != "" ? "-" : ""}${var.stack_id}"
