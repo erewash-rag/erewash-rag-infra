@@ -112,6 +112,28 @@ resource "aws_dynamodb_table" "articles" {
   }
 }
 
+# DynamoDB Table for sources
+resource "aws_dynamodb_table" "sources" {
+  name           = "sources"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "id"
+  range_key      = "sourceId"
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+
+  attribute {
+    name = "sourceId"
+    type = "S"
+  }
+
+  tags = {
+    Name = "erewash-rag-db"
+  }
+}
+
 # IAM Role for Lambda
 resource "aws_iam_role" "lambda_exec" {
   name = "erewash-rag-lambda-exec${var.stack_id != "" ? "-" : ""}${var.stack_id}"
@@ -155,6 +177,17 @@ resource "aws_lambda_function" "copy_writer" {
   role          = aws_iam_role.lambda_exec.arn
   package_type  = "Image"
   image_uri     = "318874356511.dkr.ecr.eu-west-2.amazonaws.com/erewash-rag-copy-writer:latest"
+  environment {
+    variables = {}
+  }
+}
+
+# research-assistant Lambda Function
+resource "aws_lambda_function" "research_assistant" {
+  function_name = "erewash-rag-research-assistant${var.stack_id != "" ? "-" : ""}${var.stack_id}"
+  role          = aws_iam_role.lambda_exec.arn
+  package_type  = "Image"
+  image_uri     = "318874356511.dkr.ecr.eu-west-2.amazonaws.com/erewash-rag-research-assistant:latest"
   environment {
     variables = {}
   }
