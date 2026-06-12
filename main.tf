@@ -220,7 +220,10 @@ resource "aws_lambda_function" "research_assistant" {
   image_uri     = "318874356511.dkr.ecr.eu-west-2.amazonaws.com/erewash-rag-research-assistant:latest"
   timeout       = 300
   environment {
-    variables = {}
+    variables = {
+      "erewash_council_news_url": "https://www.erewash.gov.uk/news",
+      "erewash_council_max_pages": 2
+    }
   }
 }
 
