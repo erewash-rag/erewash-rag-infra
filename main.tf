@@ -196,7 +196,9 @@ resource "aws_lambda_function" "api" {
   package_type  = "Image"
   image_uri     = "318874356511.dkr.ecr.eu-west-2.amazonaws.com/erewash-rag-api:latest"
   environment {
-    variables = {}
+    variables = {
+      api_key = var.erewash_rag_api_key
+    }
   }
 }
 
