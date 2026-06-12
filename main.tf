@@ -206,6 +206,7 @@ resource "aws_lambda_function" "copy_writer" {
   role          = aws_iam_role.lambda_exec.arn
   package_type  = "Image"
   image_uri     = "318874356511.dkr.ecr.eu-west-2.amazonaws.com/erewash-rag-copy-writer:latest"
+  timeout       = 900
   environment {
     variables = {}
   }
@@ -217,6 +218,7 @@ resource "aws_lambda_function" "research_assistant" {
   role          = aws_iam_role.lambda_exec.arn
   package_type  = "Image"
   image_uri     = "318874356511.dkr.ecr.eu-west-2.amazonaws.com/erewash-rag-research-assistant:latest"
+  timeout       = 300
   environment {
     variables = {}
   }
