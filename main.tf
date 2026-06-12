@@ -160,6 +160,35 @@ resource "aws_iam_role_policy_attachment" "lambda_dynamodb_full" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess_v2"
 }
 
+data "aws_iam_policy_document" "ecr_lambda_access" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+    actions = [
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+    ]
+  }
+}
+
+resource "aws_ecr_repository_policy" "api" {
+  repository = "erewash-rag-api"
+  policy     = data.aws_iam_policy_document.ecr_lambda_access.json
+}
+
+resource "aws_ecr_repository_policy" "copy_writer" {
+  repository = "erewash-rag-copy-writer"
+  policy     = data.aws_iam_policy_document.ecr_lambda_access.json
+}
+
+resource "aws_ecr_repository_policy" "research_assistant" {
+  repository = "erewash-rag-research-assistant"
+  policy     = data.aws_iam_policy_document.ecr_lambda_access.json
+}
+
 # Lambda Function
 resource "aws_lambda_function" "api" {
   function_name = "erewash-rag-api${var.stack_id != "" ? "-" : ""}${var.stack_id}"
