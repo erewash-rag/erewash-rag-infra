@@ -478,3 +478,24 @@ resource "aws_acm_certificate_validation" "static_site" {
   certificate_arn         = aws_acm_certificate.static_site.arn
   validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
 } 
+
+# EventBridge rule to trigger research-assistant daily at 12pm UTC
+resource "aws_cloudwatch_event_rule" "research_assistant_schedule" {
+  name                = "erewash-rag-research-assistant-schedule${var.stack_id != "" ? "-" : ""}${var.stack_id}"
+  description         = "Triggers research-assistant lambda daily at 12pm UTC"
+  schedule_expression = "cron(0 12 * * ? *)"
+}
+
+resource "aws_cloudwatch_event_target" "research_assistant_schedule" {
+  rule  = aws_cloudwatch_event_rule.research_assistant_schedule.name
+  arn   = aws_lambda_function.research_assistant.arn
+  input = "{}"
+}
+
+resource "aws_lambda_permission" "eventbridge_research_assistant" {
+  statement_id  = "AllowEventBridgeInvokeResearchAssistant"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.research_assistant.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.research_assistant_schedule.arn
+}
