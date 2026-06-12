@@ -38,4 +38,10 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -auto-approve
         env:
-          TF_INPUT: false 
+          TF_INPUT: false
+          TF_VAR_erewash_rag_api_key: ${{ secrets.EREWASH_RAG_API_KEY }}
+          TF_VAR_copy_writer_aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          TF_VAR_copy_writer_aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          TF_VAR_open_ai_api_key: ${{ secrets.OPEN_AI_API_KEY }}
+          TF_VAR_open_ai_org: ${{ secrets.OPEN_AI_ORG }}
+          TF_VAR_open_ai_project: ${{ secrets.OPEN_AI_PROJECT }}

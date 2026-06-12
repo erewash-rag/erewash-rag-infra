@@ -9,3 +9,39 @@ variable "stack_id" {
   type        = string
   default     = ""
 }
+
+variable "erewash_rag_api_key" {
+  description = "API key for erewash-rag copy-writer"
+  type        = string
+  sensitive   = true
+}
+
+variable "copy_writer_aws_access_key_id" {
+  description = "AWS access key ID for copy-writer lambda"
+  type        = string
+  sensitive   = true
+}
+
+variable "copy_writer_aws_secret_access_key" {
+  description = "AWS secret access key for copy-writer lambda"
+  type        = string
+  sensitive   = true
+}
+
+variable "open_ai_api_key" {
+  description = "OpenAI API key for copy-writer lambda"
+  type        = string
+  sensitive   = true
+}
+
+variable "open_ai_org" {
+  description = "OpenAI organisation for copy-writer lambda"
+  type        = string
+  sensitive   = true
+}
+
+variable "open_ai_project" {
+  description = "OpenAI project for copy-writer lambda"
+  type        = string
+  sensitive   = true
+}
