@@ -514,3 +514,24 @@ resource "aws_lambda_permission" "eventbridge_research_assistant" {
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.research_assistant_schedule.arn
 }
+
+# EventBridge rule to trigger copy-writer daily at 1pm UTC
+resource "aws_cloudwatch_event_rule" "copy_writer_schedule" {
+  name                = "erewash-rag-copy-writer-schedule${var.stack_id != "" ? "-" : ""}${var.stack_id}"
+  description         = "Triggers copy-writer lambda daily at 1pm UTC"
+  schedule_expression = "cron(0 13 * * ? *)"
+}
+
+resource "aws_cloudwatch_event_target" "copy_writer_schedule" {
+  rule  = aws_cloudwatch_event_rule.copy_writer_schedule.name
+  arn   = aws_lambda_function.copy_writer.arn
+  input = "{}"
+}
+
+resource "aws_lambda_permission" "eventbridge_copy_writer" {
+  statement_id  = "AllowEventBridgeInvokeCopyWriter"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.copy_writer.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.copy_writer_schedule.arn
+}
