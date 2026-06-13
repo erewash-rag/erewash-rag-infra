@@ -198,6 +198,7 @@ resource "aws_lambda_function" "api" {
   environment {
     variables = {
       api_key = var.erewash_rag_api_key
+      logging_level = "INFO"
     }
   }
 }
@@ -218,6 +219,7 @@ resource "aws_lambda_function" "copy_writer" {
       open_ai_api_key        = var.open_ai_api_key
       open_ai_org            = var.open_ai_org
       open_ai_project        = var.open_ai_project
+      logging_level          = "INFO"
     }
   }
 }
@@ -232,9 +234,10 @@ resource "aws_lambda_function" "research_assistant" {
   environment {
     variables = {
       "erewash_council_news_url": "https://www.erewash.gov.uk/news",
-      "erewash_council_max_pages": 2
-    }
+      "erewash_council_max_pages": 2,
+      "logging_level": "INFO"
   }
+}
 }
 
 # API Gateway REST API
