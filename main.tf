@@ -235,6 +235,7 @@ resource "aws_lambda_function" "research_assistant" {
     variables = {
       "erewash_council_news_url": "https://www.erewash.gov.uk/news",
       "erewash_council_max_pages": 2,
+      "derbyshire_live_url": "https://www.derbytelegraph.co.uk/news",
       "logging_level": "INFO"
   }
 }
