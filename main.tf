@@ -212,15 +212,15 @@ resource "aws_lambda_function" "copy_writer" {
   timeout       = 900
   environment {
     variables = {
-      s3_image_bucket        = "erewash-rag-article-images"
-      api_key                = var.erewash_rag_api_key
-      aws_access_key_id      = var.copy_writer_aws_access_key_id
-      aws_secret_access_key  = var.copy_writer_aws_secret_access_key
-      open_ai_api_key        = var.open_ai_api_key
-      open_ai_org            = var.open_ai_org
-      open_ai_project        = var.open_ai_project
-      logging_level          = "INFO"
-      hide_published_articles= False
+      s3_image_bucket         = "erewash-rag-article-images"
+      api_key                 = var.erewash_rag_api_key
+      aws_access_key_id       = var.copy_writer_aws_access_key_id
+      aws_secret_access_key   = var.copy_writer_aws_secret_access_key
+      open_ai_api_key         = var.open_ai_api_key
+      open_ai_org             = var.open_ai_org
+      open_ai_project         = var.open_ai_project
+      logging_level           = "INFO"
+      hide_published_articles = "False"
     }
   }
 }
