@@ -220,6 +220,7 @@ resource "aws_lambda_function" "copy_writer" {
       open_ai_org            = var.open_ai_org
       open_ai_project        = var.open_ai_project
       logging_level          = "INFO"
+      hide_published_articles= False
     }
   }
 }
