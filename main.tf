@@ -221,6 +221,7 @@ resource "aws_lambda_function" "copy_writer" {
       open_ai_project         = var.open_ai_project
       logging_level           = "INFO"
       hide_published_articles = "False"
+      source_ids_to_write     = "erewash_council_news,derbyshire_live"
     }
   }
 }
