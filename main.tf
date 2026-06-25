@@ -504,7 +504,7 @@ resource "aws_acm_certificate_validation" "static_site" {
 resource "aws_cloudwatch_event_rule" "research_assistant_schedule" {
   name                = "erewash-rag-research-assistant-schedule${var.stack_id != "" ? "-" : ""}${var.stack_id}"
   description         = "Triggers research-assistant lambda daily at 12pm UTC"
-  schedule_expression = "cron(0 9/17 * * ? *)"
+  schedule_expression = "cron(0 9,17 * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "research_assistant_schedule" {
@@ -525,7 +525,7 @@ resource "aws_lambda_permission" "eventbridge_research_assistant" {
 resource "aws_cloudwatch_event_rule" "copy_writer_schedule" {
   name                = "erewash-rag-copy-writer-schedule${var.stack_id != "" ? "-" : ""}${var.stack_id}"
   description         = "Triggers copy-writer lambda daily at 1pm UTC"
-  schedule_expression = "cron(30 9/17 * * ? *)"
+  schedule_expression = "cron(30 9,17 * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "copy_writer_schedule" {
