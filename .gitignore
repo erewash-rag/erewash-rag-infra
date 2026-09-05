@@ -1,0 +1,31 @@
+# Terraform state — contains secrets in plaintext, never commit
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Variable files with secret values
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Local Terraform directories and plan output
+.terraform/
+.terraform.lock.hcl
+*.tfplan
+
+# CLI config / credentials
+.terraformrc
+terraform.rc
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
